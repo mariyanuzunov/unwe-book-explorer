@@ -7,7 +7,6 @@ import Explore from './components/Explore';
 import './App.css';
 
 function App() {
-  console.log(process.env.REACT_APP_API_KEY);
   return (
     <BrowserRouter>
       <Header />
