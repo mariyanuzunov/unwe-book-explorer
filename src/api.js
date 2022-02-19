@@ -1,8 +1,6 @@
 import { normalize } from './utilities';
 
 const URL = 'https://www.googleapis.com/books/v1/volumes/';
-const FIELDS_FEATURED =
-  '?fields=(id,volumeInfo(title,subtitle,authors,imageLinks/thumbnail))';
 
 const FIELDS_SEARCH =
   '?fields=totalItems,items(id,volumeInfo(title,subtitle,authors,description,averageRating,ratingsCount,imageLinks/thumbnail))';
@@ -11,53 +9,55 @@ const API_KEY = `&key=${process.env.REACT_APP_API_KEY}`;
 
 // TODO: Refactor api calls
 
-export async function get2021BestSellers() {
-  const ids = [
-    'nNjTDwAAQBAJ',
-    'Ed8nEAAAQBAJ',
-    'Kn4eEAAAQBAJ',
-    'yqksEAAAQBAJ',
-    'sqVPEAAAQBAJ',
-  ];
+export async function getBookShelf() {
+  const url = `https://www.googleapis.com/books/v1/users/100735580474519719694/bookshelves`;
+  const shelfIds = [1001, 1002, 1003];
 
-  const batch = ids.map(id => fetch(URL + id + FIELDS_FEATURED));
-
+  const batch = shelfIds.map(id => fetch(`${url}/${id}/volumes`));
   const responses = await Promise.all(batch);
-  const data = await Promise.all(responses.map(res => res.json()));
-  return normalize(data);
+
+  const data = await Promise.all(
+    responses.map(res => {
+      if (!res.ok) {
+        throw new Error();
+      }
+
+      return res.json();
+    })
+  );
+
+  return data.map(x => normalize(x.items));
 }
 
-export async function getAllTimeBestSellers() {
-  const ids = [
-    'wT8817AhkMAC',
-    'FzfIrQEACAAJ',
-    '2jg9DwAAQBAJ',
-    'KbC_uQAACAAJ',
-    'FzVjBgAAQBAJ',
-  ];
+// With multiple async calls
 
-  const batch = ids.map(id => fetch(URL + id + FIELDS_FEATURED));
+// export async function get2021BestSellers() {
 
-  const responses = await Promise.all(batch);
-  const data = await Promise.all(responses.map(res => res.json()));
-  return normalize(data);
-}
+// const ids = [
+//   'nNjTDwAAQBAJ',
+//   'Ed8nEAAAQBAJ',
+//   'Kn4eEAAAQBAJ',
+//   'yqksEAAAQBAJ',
+//   'sqVPEAAAQBAJ',
+// ];
 
-export async function getMustRead() {
-  const ids = [
-    'B1hSG45JCX4C',
-    '5NomkK4EV68C',
-    'AJ4REAAAQBAJ',
-    'PGR2AwAAQBAJ',
-    'Xfze51E7TEoC',
-  ];
+// const batch = ids.map(id => fetch(URL + id + FIELDS_FEATURED));
 
-  const batch = ids.map(id => fetch(URL + id + FIELDS_FEATURED));
+// const responses = await Promise.all(batch);
+// const data = await Promise.all(responses.map(res => res.json()));
+// return normalize(data);
 
-  const responses = await Promise.all(batch);
-  const data = await Promise.all(responses.map(res => res.json()));
-  return normalize(data);
-}
+//   const res = await fetch(
+//     'https://www.googleapis.com/books/v1/users/100735580474519719694/bookshelves/1001/volumes'
+//   );
+
+//   if (!res.ok) {
+//     throw new Error();
+//   }
+
+//   const data = await res.json();
+//   return normalize(data.items);
+// }
 
 // Search
 
@@ -109,4 +109,49 @@ export async function search(criteria, searchTerm) {
   });
 
   return items.filter(x => x !== null);
+}
+
+export async function getBookById(id) {
+  const res = await fetch(URL + id);
+
+  if (!res.ok) {
+    throw new Error('Oops, something went wrong!');
+  }
+
+  const data = await res.json();
+
+  const { volumeInfo } = data;
+
+  const details = {
+    id,
+    title: volumeInfo.subtitle
+      ? `${volumeInfo.title}: ${volumeInfo.subtitle}`
+      : volumeInfo.title,
+
+    authors:
+      volumeInfo.authors?.length > 1
+        ? volumeInfo.authors.join(', ')
+        : volumeInfo.authors[0],
+
+    description:
+      volumeInfo?.description || 'There is no description of the book.',
+
+    publisher: volumeInfo.publisher,
+    publishedDate: volumeInfo.publishedDate,
+    categories:
+      volumeInfo?.categories?.join('\n') ||
+      'There are no specified categories.',
+    pageCount: volumeInfo.pageCount,
+    language: volumeInfo.language,
+    isbn: volumeInfo.industryIdentifiers[0].identifier,
+
+    imageUrl: volumeInfo.imageLinks?.thumbnail
+      ? volumeInfo.imageLinks?.thumbnail
+      : 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Placeholder_book.svg/464px-Placeholder_book.svg.png',
+
+    rating: volumeInfo.averageRating || 0,
+    totalVotes: volumeInfo.ratingsCount || 0,
+  };
+
+  return details;
 }

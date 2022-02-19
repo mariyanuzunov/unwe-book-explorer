@@ -1,6 +1,14 @@
+import { useNavigate } from 'react-router-dom';
+
 export default function BookPreview({ book }) {
+  const navigate = useNavigate();
+
+  function handleClick() {
+    navigate(`/details/${book.id}`);
+  }
+
   return (
-    <article className='book-preview-container'>
+    <article className='book-container' onClick={handleClick}>
       <section className='image-container'>
         <img src={book.imageUrl} className='book-thumbnail' />
       </section>

@@ -1,33 +1,44 @@
 import { useEffect, useState } from 'react';
+import { getBookShelf } from '../api';
+
 import Hero from './Hero';
 import FeaturedBookList from './FeaturedBookList';
-
-import { get2021BestSellers, getAllTimeBestSellers, getMustRead } from '../api';
+import Spinner from './Spinner';
 
 export default function Home() {
-  const [bestSellers2021List, setBestSellers2021List] = useState([]);
-  const [allTimeBestSellers, setAllTimeBestSellers] = useState([]);
-  const [mustRead, setMustRead] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [shelves, setShelves] = useState([]);
 
   useEffect(() => {
-    get2021BestSellers().then(setBestSellers2021List).catch(console.log);
-    getAllTimeBestSellers().then(setAllTimeBestSellers).catch(console.log);
-    getMustRead().then(setMustRead).catch(console.log);
+    setIsLoading(true);
+    getBookShelf()
+      .then(shelves => {
+        setIsLoading(false);
+        setShelves(shelves);
+      })
+      .catch(console.log);
   }, []);
+
+  function renderShelves() {
+    if (isLoading) {
+      return <Spinner />;
+    }
+
+    const SHELF_NAMES = [
+      '2021 Best Sellers',
+      'All Time Best Sellers',
+      'Must Read',
+    ];
+
+    return shelves.map((x, id) => (
+      <FeaturedBookList books={x} listTitle={SHELF_NAMES[id]} key={x.id} />
+    ));
+  }
 
   return (
     <>
       <Hero />
-
-      <FeaturedBookList
-        listTitle='2021 best sellers'
-        books={bestSellers2021List}
-      />
-      <FeaturedBookList
-        listTitle='All Time Best Sellers'
-        books={allTimeBestSellers}
-      />
-      <FeaturedBookList listTitle='Must Read' books={mustRead} />
+      {renderShelves()}
     </>
   );
 }
