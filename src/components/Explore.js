@@ -1,46 +1,45 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 
 import { search } from '../api';
 
 import BookPreview from './BookPreview';
+import Search from './Search';
+import Spinner from './Spinner';
 
 export default function Explore() {
-  const criteriaRef = useRef();
-  const searchTermRef = useRef();
   const [results, setResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleSearch() {
-    const criteria = criteriaRef.current.value;
-    const term = searchTermRef.current.value;
-
-    if (term) {
-      search(criteria, term).then(setResults);
-    }
+  function handleSearch(criteria, term) {
+    setIsLoading(true);
+    search(criteria, term)
+      .then(results => {
+        setResults(results);
+        setIsLoading(false);
+      })
+      .catch(console.log);
   }
 
   return (
     <>
-      <section className='search'>
-        <select ref={criteriaRef} className='search-select'>
-          <option value='intitle'>Title</option>
-          <option value='inauthor'>Author</option>
-          <option value='subject'>Category</option>
-          <option value='isbn'>ISBN</option>
-        </select>
-        <input
-          type='text'
-          placeholder='Select a criteria and enter a serch term...'
-          ref={searchTermRef}
-          className='search-input'
-        />
-        <button onClick={handleSearch} className='search-btn'>
-          Search
-        </button>
-      </section>
-      <section className='search-results'>
-        {results.map(x => (
-          <BookPreview book={x} key={x.id} />
-        ))}
+      <Search handleSearch={handleSearch} />
+      <section className='search-results container'>
+        {isLoading ? (
+          <Spinner />
+        ) : (
+          <>
+            {results.length > 0 ? (
+              results.map(x => <BookPreview book={x} key={x.id} />)
+            ) : (
+              <p className='info-msg'>
+                You can perform a full or a partial search on different
+                criterias, such as <span>title</span>, <span>author</span>,{' '}
+                <span>category</span>, or <span>isbn</span>. Come on, give it a
+                try!
+              </p>
+            )}
+          </>
+        )}
       </section>
     </>
   );

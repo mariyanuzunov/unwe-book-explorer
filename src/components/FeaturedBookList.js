@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function FeaturedBookList({ listTitle, books }) {
   return (
-    <section className='book-list'>
+    <section className='book-list container'>
       <h4 className='book-list-title'>{listTitle}</h4>
       {books.map(book => (
         <FeaturedBook book={book} key={book.id} />

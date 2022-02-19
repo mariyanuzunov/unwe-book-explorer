@@ -29,36 +29,6 @@ export async function getBookShelf() {
   return data.map(x => normalize(x.items));
 }
 
-// With multiple async calls
-
-// export async function get2021BestSellers() {
-
-// const ids = [
-//   'nNjTDwAAQBAJ',
-//   'Ed8nEAAAQBAJ',
-//   'Kn4eEAAAQBAJ',
-//   'yqksEAAAQBAJ',
-//   'sqVPEAAAQBAJ',
-// ];
-
-// const batch = ids.map(id => fetch(URL + id + FIELDS_FEATURED));
-
-// const responses = await Promise.all(batch);
-// const data = await Promise.all(responses.map(res => res.json()));
-// return normalize(data);
-
-//   const res = await fetch(
-//     'https://www.googleapis.com/books/v1/users/100735580474519719694/bookshelves/1001/volumes'
-//   );
-
-//   if (!res.ok) {
-//     throw new Error();
-//   }
-
-//   const data = await res.json();
-//   return normalize(data.items);
-// }
-
 // Search
 
 export async function search(criteria, searchTerm) {
@@ -139,11 +109,10 @@ export async function getBookById(id) {
     publisher: volumeInfo.publisher,
     publishedDate: volumeInfo.publishedDate,
     categories:
-      volumeInfo?.categories?.join('\n') ||
-      'There are no specified categories.',
+      volumeInfo.categories?.join('\n') || 'There are no specified categories.',
     pageCount: volumeInfo.pageCount,
     language: volumeInfo.language,
-    isbn: volumeInfo.industryIdentifiers[0].identifier,
+    isbn: volumeInfo.industryIdentifiers[0]?.identifier,
 
     imageUrl: volumeInfo.imageLinks?.thumbnail
       ? volumeInfo.imageLinks?.thumbnail
