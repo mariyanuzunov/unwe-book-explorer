@@ -5,8 +5,6 @@ const URL = 'https://www.googleapis.com/books/v1/volumes/';
 const FIELDS_SEARCH =
   '?fields=totalItems,items(id,volumeInfo(title,subtitle,authors,description,averageRating,ratingsCount,imageLinks/thumbnail))';
 
-const API_KEY = `&key=${process.env.REACT_APP_API_KEY}`;
-
 // TODO: Refactor api calls
 
 export async function getBookShelf() {
@@ -32,7 +30,7 @@ export async function getBookShelf() {
 // Search
 
 export async function search(criteria, searchTerm) {
-  const adr = URL + FIELDS_SEARCH + `&q=${criteria}:${searchTerm}` + API_KEY;
+  const adr = URL + FIELDS_SEARCH + `&q=${criteria}:${searchTerm}`;
 
   const res = await fetch(adr);
   const data = await res.json();
